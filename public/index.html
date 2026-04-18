@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Review Impact Estimator | TMS Solutions Group</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #FAFAF7;
+      --gold: #B8860B;
+      --gold-light: #D4A017;
+      --red: #C0392B;
+      --yellow: #E67E22;
+      --green: #27AE60;
+      --dark: #1a1a1a;
+      --mid: #555;
+      --light: #888;
+      --border: #E0DDD5;
+      --card: #ffffff;
+      --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--dark); min-height: 100vh; }
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .site-header {
+      background: var(--dark);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .site-header .brand { color: #fff; font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; }
+    .site-header .contact { color: #ccc; font-size: 0.78rem; }
+
+    /* ===== LANDING ===== */
+    .landing-hero {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 60px 24px 40px;
+      text-align: center;
+    }
+    .pill {
+      display: inline-block;
+      background: var(--gold);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 6px 18px;
+      border-radius: 999px;
+      margin-bottom: 24px;
+    }
+    .landing-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 2.8rem);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 18px;
+    }
+    .landing-subtitle {
+      font-size: 1.05rem;
+      color: var(--mid);
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+    .benefit-list { list-style: none; text-align: left; display: inline-block; margin-bottom: 36px; }
+    .benefit-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.97rem;
+      color: var(--mid);
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+    .benefit-list li .check {
+      width: 20px; height: 20px; min-width: 20px;
+      background: var(--green);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 0.7rem; font-weight: 700; margin-top: 1px;
+    }
+    .name-row { margin-bottom: 20px; }
+    .name-row label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--mid); margin-bottom: 8px; }
+    .name-row input {
+      width: 100%; max-width: 400px;
+      padding: 12px 16px; border: 1.5px solid var(--border);
+      border-radius: 8px; font-size: 1rem; font-family: 'Inter', sans-serif;
+      background: #fff; color: var(--dark); outline: none; transition: border-color 0.2s;
+    }
+    .name-row input:focus { border-color: var(--gold); }
+    .btn-primary {
+      background: var(--gold); color: #fff; border: none;
+      padding: 15px 40px; border-radius: 8px; font-size: 1rem;
+      font-weight: 700; cursor: pointer; transition: background 0.2s, transform 0.1s;
+    }
+    .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+    .disclaimer { margin-top: 12px; font-size: 0.82rem; color: var(--light); }
+
+    .landing-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px; max-width: 760px; margin: 48px auto 0; padding: 0 24px;
+    }
+    .stat-card {
+      background: var(--card); border-radius: 10px; padding: 20px;
+      box-shadow: var(--shadow); text-align: center;
+    }
+    .stat-card .snum {
+      font-family: 'Playfair Display', serif; font-size: 1.7rem;
+      font-weight: 700; color: var(--gold); margin-bottom: 6px;
+    }
+    .stat-card .slabel { font-size: 0.8rem; color: var(--mid); line-height: 1.4; }
+
+    /* ===== CALCULATOR ===== */
+    .calc-wrap { max-width: 760px; margin: 0 auto; padding: 40px 24px 60px; }
+    .calc-header { text-align: center; margin-bottom: 36px; }
+    .calc-header h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 8px; }
+    .calc-header p { color: var(--mid); font-size: 0.95rem; }
+
+    .calc-card {
+      background: var(--card); border-radius: 12px; box-shadow: var(--shadow);
+      padding: 28px; margin-bottom: 20px;
+    }
+    .calc-card h3 {
+      font-family: 'Playfair Display', serif; font-size: 1.15rem;
+      margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1.5px solid var(--border);
+    }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .form-group { margin-bottom: 0; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group label {
+      display: block; font-size: 0.85rem; font-weight: 600;
+      color: var(--mid); margin-bottom: 8px;
+    }
+    .form-group .hint { font-size: 0.75rem; font-weight: 400; color: var(--light); margin-left: 6px; }
+    .form-group input[type="number"],
+    .form-group select {
+      width: 100%; padding: 11px 14px;
+      border: 1.5px solid var(--border); border-radius: 8px;
+      font-size: 0.97rem; font-family: 'Inter', sans-serif;
+      background: #fff; color: var(--dark); outline: none; transition: border-color 0.2s;
+      appearance: auto;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--gold); }
+    .input-prefix { position: relative; }
+    .input-prefix span {
+      position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+      font-weight: 600; color: var(--mid); font-size: 0.97rem; pointer-events: none;
+    }
+    .input-prefix input { padding-left: 26px; }
+
+    .slider-wrap { margin-top: 4px; }
+    .slider-wrap input[type="range"] {
+      width: 100%; height: 6px; border-radius: 999px;
+      accent-color: var(--gold); border: none; background: var(--border);
+      padding: 0;
+    }
+    .slider-labels {
+      display: flex; justify-content: space-between;
+      font-size: 0.75rem; color: var(--light); margin-top: 4px;
+    }
+    .slider-value {
+      text-align: center; font-size: 1.2rem; font-weight: 700;
+      color: var(--gold); margin-bottom: 8px;
+    }
+
+    .calc-footer { text-align: center; margin-top: 24px; }
+
+    /* ===== RESULTS ===== */
+    .results-wrap { max-width: 760px; margin: 0 auto; padding: 40px 24px 60px; }
+    .results-header { text-align: center; margin-bottom: 28px; }
+    .results-header h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 6px; }
+    .results-header p { color: var(--mid); font-size: 0.95rem; }
+
+    .opportunity-banner {
+      border-radius: 12px; padding: 24px 28px; margin-bottom: 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px;
+    }
+    .opportunity-banner.green { background: #EAFAF1; border: 2px solid var(--green); }
+    .opportunity-banner.yellow { background: #FEF5E7; border: 2px solid var(--yellow); }
+    .opportunity-banner.red { background: #FDEDEC; border: 2px solid var(--red); }
+    .banner-label {
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; margin-bottom: 4px;
+    }
+    .banner-label.green { color: var(--green); }
+    .banner-label.yellow { color: var(--yellow); }
+    .banner-label.red { color: var(--red); }
+    .banner-headline { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--dark); }
+    .banner-amount {
+      font-family: 'Playfair Display', serif; font-size: 2rem;
+      font-weight: 700; text-align: right;
+    }
+    .banner-amount.green { color: var(--green); }
+    .banner-amount.yellow { color: var(--yellow); }
+    .banner-amount.red { color: var(--red); }
+    .banner-sublabel { font-size: 0.78rem; color: var(--mid); text-align: right; }
+
+    .metric-boxes {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 16px; margin-bottom: 24px;
+    }
+    .metric-box {
+      background: var(--card); border-radius: 12px;
+      box-shadow: var(--shadow); padding: 20px; text-align: center;
+    }
+    .metric-box .mval {
+      font-family: 'Playfair Display', serif; font-size: 1.5rem;
+      font-weight: 700; color: var(--gold); margin-bottom: 6px;
+    }
+    .metric-box .mlabel { font-size: 0.8rem; color: var(--mid); line-height: 1.4; }
+
+    .breakdown-card {
+      background: var(--card); border-radius: 12px;
+      box-shadow: var(--shadow); padding: 24px; margin-bottom: 24px;
+    }
+    .breakdown-card h3 { font-family: 'Playfair Display', serif; font-size: 1.15rem; margin-bottom: 16px; }
+    .breakdown-table { width: 100%; border-collapse: collapse; }
+    .breakdown-table th {
+      font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--light); padding: 8px 12px;
+      border-bottom: 1.5px solid var(--border); text-align: left;
+    }
+    .breakdown-table th:last-child { text-align: right; }
+    .breakdown-table td {
+      padding: 12px 12px; border-bottom: 1px solid var(--border);
+      font-size: 0.9rem; vertical-align: top;
+    }
+    .breakdown-table td:last-child { text-align: right; font-weight: 700; color: var(--green); }
+    .breakdown-table tr:last-child td { border-bottom: none; font-weight: 700; color: var(--dark); }
+    .breakdown-table tr:last-child td:last-child { color: var(--gold); font-size: 1.05rem; }
+    .row-desc { font-size: 0.78rem; color: var(--light); margin-top: 3px; }
+
+    .timeline-card {
+      background: var(--card); border-radius: 12px;
+      box-shadow: var(--shadow); padding: 24px; margin-bottom: 24px;
+    }
+    .timeline-card h3 { font-family: 'Playfair Display', serif; font-size: 1.15rem; margin-bottom: 16px; }
+    .timeline-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .timeline-item { background: var(--cream); border-radius: 10px; padding: 16px; text-align: center; }
+    .timeline-item .tval { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; color: var(--gold); }
+    .timeline-item .tunits { font-size: 0.82rem; color: var(--mid); }
+    .timeline-item .tlabel { font-size: 0.82rem; color: var(--mid); margin-top: 4px; }
+
+    .recs-card {
+      background: var(--card); border-radius: 12px;
+      box-shadow: var(--shadow); padding: 24px; margin-bottom: 24px;
+    }
+    .recs-card h3 { font-family: 'Playfair Display', serif; font-size: 1.15rem; margin-bottom: 16px; }
+    .rec-item {
+      display: flex; gap: 14px; margin-bottom: 16px;
+      padding-bottom: 16px; border-bottom: 1px solid var(--border);
+    }
+    .rec-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+    .rec-num {
+      width: 30px; height: 30px; min-width: 30px;
+      background: var(--gold); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-size: 0.9rem; margin-top: 1px;
+    }
+    .rec-title { font-weight: 700; font-size: 0.97rem; margin-bottom: 4px; }
+    .rec-desc { font-size: 0.87rem; color: var(--mid); line-height: 1.5; }
+
+    .pdf-btn-wrap { text-align: center; margin-bottom: 24px; }
+    .btn-pdf {
+      background: #fff; color: var(--dark);
+      border: 2px solid var(--gold); padding: 13px 36px;
+      border-radius: 8px; font-size: 0.97rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-pdf:hover { background: var(--gold); color: #fff; }
+
+    .cta-card {
+      background: var(--dark); border-radius: 12px;
+      padding: 32px; text-align: center; margin-bottom: 24px;
+    }
+    .cta-card h3 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: #fff; margin-bottom: 10px; }
+    .cta-card p { color: #ccc; font-size: 0.92rem; margin-bottom: 20px; line-height: 1.5; }
+    .cta-card a {
+      display: inline-block; background: var(--gold); color: #fff;
+      padding: 13px 32px; border-radius: 8px; font-weight: 700;
+      text-decoration: none; font-size: 0.95rem;
+    }
+    .cta-contact { color: #aaa; font-size: 0.82rem; margin-top: 14px; }
+
+    .sources { font-size: 0.75rem; color: var(--light); text-align: center; margin-bottom: 20px; line-height: 1.6; }
+
+    .site-footer {
+      background: var(--dark); color: #888; text-align: center;
+      padding: 18px 24px; font-size: 0.8rem; margin-top: 40px;
+    }
+
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .metric-boxes { grid-template-columns: 1fr; }
+      .timeline-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="brand">TMS Solutions Group</div>
+  <div class="contact">tom@tms-solutions-group.com &nbsp;|&nbsp; 386-387-8620</div>
+</header>
+
+<!-- ===== LANDING ===== -->
+<div id="view-landing" class="view active">
+  <div class="landing-hero">
+    <div class="pill">Free Calculator</div>
+    <h1 class="landing-title">Google Review Impact Estimator</h1>
+    <p class="landing-subtitle">Find out exactly how much revenue your Google reviews are costing you &mdash; and what you stand to gain by fixing it.</p>
+    <ul class="benefit-list">
+      <li><span class="check">&#10003;</span>Calculate your estimated annual revenue opportunity from more reviews</li>
+      <li><span class="check">&#10003;</span>See the dollar impact of improving your star rating toward 4.5</li>
+      <li><span class="check">&#10003;</span>Get a timeline and action plan to capture your opportunity</li>
+    </ul>
+    <div class="name-row">
+      <label for="biz-name-landing">Business Name (optional)</label>
+      <input type="text" id="biz-name-landing" placeholder="e.g. Main Street Plumbing">
+    </div>
+    <button class="btn-primary" onclick="goToCalc()">Calculate My Opportunity</button>
+    <p class="disclaimer">No sign-up required. Results shown instantly.</p>
+  </div>
+
+  <div class="landing-stats">
+    <div class="stat-card"><div class="snum">108%</div><div class="slabel">more revenue earned by businesses with 25+ reviews</div></div>
+    <div class="stat-card"><div class="snum">7%</div><div class="slabel">revenue increase per additional star rating (Harvard Business School)</div></div>
+    <div class="stat-card"><div class="snum">126%</div><div class="slabel">more traffic from Google 3-pack placement</div></div>
+    <div class="stat-card"><div class="snum">18%</div><div class="slabel">revenue growth linked to consistently positive reviews</div></div>
+  </div>
+  <div style="height:60px;"></div>
+</div>
+
+<!-- ===== CALCULATOR ===== -->
+<div id="view-calc" class="view">
+  <div class="calc-wrap">
+    <div class="calc-header">
+      <h2>Enter Your Business Details</h2>
+      <p>The more accurate your inputs, the more precise your revenue opportunity estimate.</p>
+    </div>
+
+    <div class="calc-card">
+      <h3>Business Information</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="c-biz-name">Business Name <span class="hint">(optional)</span></label>
+          <input type="text" id="c-biz-name" placeholder="e.g. Main Street Plumbing">
+        </div>
+        <div class="form-group">
+          <label for="c-biz-type">Business Type</label>
+          <select id="c-biz-type">
+            <option value="service">Service Business</option>
+            <option value="restaurant">Restaurant / Food</option>
+            <option value="retail">Retail Store</option>
+            <option value="healthcare">Healthcare / Medical</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="c-revenue">Estimated Monthly Revenue</label>
+          <div class="input-prefix">
+            <span>$</span>
+            <input type="number" id="c-revenue" placeholder="25000" min="1000" step="500">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="calc-card">
+      <h3>Your Current Google Reviews</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="c-review-count">Current Number of Reviews</label>
+          <input type="number" id="c-review-count" placeholder="e.g. 18" min="0" step="1">
+        </div>
+        <div class="form-group">
+          <label for="c-rating">Current Average Star Rating</label>
+          <select id="c-rating">
+            <option value="">-- Select Rating --</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="calc-card">
+      <h3>Your Review Goal</h3>
+      <div class="form-group">
+        <label>Target Review Count</label>
+        <div class="slider-value" id="slider-val">50 reviews</div>
+        <div class="slider-wrap">
+          <input type="range" id="c-target" min="25" max="200" value="50" step="5" oninput="updateSlider()">
+          <div class="slider-labels"><span>25 reviews</span><span>200 reviews</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="calc-footer">
+      <button class="btn-primary" onclick="calculate()">Calculate My Revenue Opportunity</button>
+      <div style="margin-top:10px; font-size:0.82rem; color:var(--light);">All calculations use published research data. See sources on results page.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RESULTS ===== -->
+<div id="view-results" class="view">
+  <div class="results-wrap">
+    <div class="results-header">
+      <h2>Your Review Revenue Report</h2>
+      <p id="results-biz-label">See your estimated annual revenue opportunity.</p>
+    </div>
+
+    <!-- Banner -->
+    <div class="opportunity-banner" id="opp-banner">
+      <div>
+        <div class="banner-label" id="banner-label">Annual Opportunity</div>
+        <div class="banner-headline" id="banner-headline"></div>
+      </div>
+      <div>
+        <div class="banner-amount" id="banner-amount"></div>
+        <div class="banner-sublabel">Estimated Annual Opportunity</div>
+      </div>
+    </div>
+
+    <!-- 3 Metric Boxes -->
+    <div class="metric-boxes">
+      <div class="metric-box">
+        <div class="mval" id="m-baseline"></div>
+        <div class="mlabel">Current Annual Revenue Baseline</div>
+      </div>
+      <div class="metric-box">
+        <div class="mval" id="m-with-reviews"></div>
+        <div class="mlabel">Estimated Annual Revenue With Strong Reviews</div>
+      </div>
+      <div class="metric-box">
+        <div class="mval" id="m-opportunity"></div>
+        <div class="mlabel">Total Annual Opportunity</div>
+      </div>
+    </div>
+
+    <!-- Breakdown Table -->
+    <div class="breakdown-card">
+      <h3>Revenue Impact Breakdown</h3>
+      <table class="breakdown-table">
+        <thead>
+          <tr>
+            <th>Improvement Area</th>
+            <th>Details</th>
+            <th>Est. Annual Impact</th>
+          </tr>
+        </thead>
+        <tbody id="breakdown-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline-card">
+      <h3>Time to Reach Your Goal</h3>
+      <div class="timeline-grid">
+        <div class="timeline-item">
+          <div class="tval" id="t-organic"></div>
+          <div class="tunits">months</div>
+          <div class="tlabel">At 4 new reviews/month<br><small>Organic, ask-based approach</small></div>
+        </div>
+        <div class="timeline-item">
+          <div class="tval" id="t-active"></div>
+          <div class="tunits">months</div>
+          <div class="tlabel">At 10 new reviews/month<br><small>With an active review request system</small></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top 3 Recommendations -->
+    <div class="recs-card">
+      <h3>Your Top 3 Action Recommendations</h3>
+      <div id="recs-list"></div>
+    </div>
+
+    <!-- PDF + CTA -->
+    <div class="pdf-btn-wrap">
+      <button class="btn-pdf" onclick="generatePDF()">Download PDF Report</button>
+    </div>
+
+    <div class="cta-card">
+      <h3>Ready to Capture This Opportunity?</h3>
+      <p>TMS Solutions Group helps local businesses implement proven review generation systems that drive real revenue growth. Let's build your custom strategy.</p>
+      <a href="mailto:tom@tms-solutions-group.com">Schedule a Free Strategy Call</a>
+      <div class="cta-contact">tom@tms-solutions-group.com &nbsp;|&nbsp; tms-solutions-group.com &nbsp;|&nbsp; 386-387-8620</div>
+    </div>
+
+    <div class="sources">
+      <strong>Data Sources:</strong> Harvard Business School restaurant revenue study &bull; Womply review impact research &bull;
+      BrightLocal Local Consumer Review Survey 2024 &bull; Trustmary review statistics
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  tom@tms-solutions-group.com &nbsp;&bull;&nbsp; tms-solutions-group.com &nbsp;&bull;&nbsp; 386-387-8620 &nbsp;&bull;&nbsp; TMS Solutions Group
+</footer>
+
+<script>
+// ===== INIT RATING DROPDOWN =====
+(function() {
+  const sel = document.getElementById('c-rating');
+  sel.innerHTML = '<option value="">-- Select Rating --</option>';
+  for (let r = 10; r <= 50; r++) {
+    const val = (r / 10).toFixed(1);
+    const opt = document.createElement('option');
+    opt.value = val;
+    opt.textContent = val + ' stars';
+    if (val === '3.8') opt.selected = true;
+    sel.appendChild(opt);
+  }
+})();
+
+function updateSlider() {
+  const val = document.getElementById('c-target').value;
+  document.getElementById('slider-val').textContent = val + ' reviews';
+}
+
+function goToCalc() {
+  const name = document.getElementById('biz-name-landing').value.trim();
+  if (name) document.getElementById('c-biz-name').value = name;
+  showView('view-calc');
+  window.scrollTo(0,0);
+}
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ===== CALCULATION STATE =====
+let calcResults = {};
+
+function fmtDollar(n) {
+  if (n >= 1000000) return '$' + (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return '$' + Math.round(n/1000) + 'K';
+  return '$' + Math.round(n).toLocaleString();
+}
+
+function fmtDollarFull(n) {
+  return '$' + Math.round(n).toLocaleString();
+}
+
+function calculate() {
+  const biz = document.getElementById('c-biz-name').value.trim();
+  const bizType = document.getElementById('c-biz-type').value;
+  const monthly = parseFloat(document.getElementById('c-revenue').value);
+  const currentReviews = parseInt(document.getElementById('c-review-count').value, 10);
+  const currentRating = parseFloat(document.getElementById('c-rating').value);
+  const targetReviews = parseInt(document.getElementById('c-target').value, 10);
+
+  // Validation
+  if (!monthly || isNaN(monthly) || monthly <= 0) {
+    alert('Please enter your estimated monthly revenue.');
+    return;
+  }
+  if (isNaN(currentReviews) || currentReviews < 0) {
+    alert('Please enter your current number of Google reviews.');
+    return;
+  }
+  if (!currentRating || isNaN(currentRating)) {
+    alert('Please select your current average star rating.');
+    return;
+  }
+
+  const annual = monthly * 12;
+
+  // 1. Review count impact: going from <25 to >=25 = 15% lift
+  let reviewCountImpact = 0;
+  let reviewCountDesc = '';
+  if (currentReviews < 25 && targetReviews >= 25) {
+    reviewCountImpact = annual * 0.15;
+    reviewCountDesc = 'Reaching 25+ reviews unlocks the 108% more revenue threshold';
+  } else if (currentReviews >= 25) {
+    reviewCountImpact = 0;
+    reviewCountDesc = 'Already past the 25-review threshold - maintain consistent growth';
+  } else {
+    reviewCountImpact = 0;
+    reviewCountDesc = 'Set your target to 25+ reviews to unlock this revenue lift';
+  }
+
+  // 2. Star rating impact: 7% per star gap from current to 4.5
+  let ratingGap = Math.max(0, 4.5 - currentRating);
+  let ratingImpact = ratingGap * 0.07 * annual;
+  let ratingDesc = '';
+  if (currentRating >= 4.5) {
+    ratingDesc = 'Excellent! Maintain your 4.5+ rating through consistent review responses';
+  } else {
+    ratingDesc = 'Improving from ' + currentRating.toFixed(1) + ' to 4.5 stars (' + ratingGap.toFixed(1) + ' star gap x 7% per star)';
+  }
+
+  // 3. Google 3-pack visibility value
+  let threePackImpact = 0;
+  let threePackDesc = '';
+  if (currentReviews < 50) {
+    threePackImpact = annual * 0.15;
+    threePackDesc = '3-pack generates 126% more traffic - reaching 50+ reviews significantly improves eligibility';
+  } else {
+    threePackImpact = 0;
+    threePackDesc = 'With 50+ reviews you are positioned for 3-pack - focus on GBP optimization';
+  }
+
+  const totalOpportunity = reviewCountImpact + ratingImpact + threePackImpact;
+  const revenueWithReviews = annual + totalOpportunity;
+
+  const reviewsNeeded = Math.max(0, targetReviews - currentReviews);
+  const monthsOrganic = reviewsNeeded > 0 ? Math.ceil(reviewsNeeded / 4) : 0;
+  const monthsActive = reviewsNeeded > 0 ? Math.ceil(reviewsNeeded / 10) : 0;
+
+  calcResults = {
+    biz, bizType, monthly, annual, currentReviews, currentRating,
+    targetReviews, reviewCountImpact, reviewCountDesc, ratingGap,
+    ratingImpact, ratingDesc, threePackImpact, threePackDesc,
+    totalOpportunity, revenueWithReviews, reviewsNeeded,
+    monthsOrganic, monthsActive
+  };
+
+  renderResults(calcResults);
+  showView('view-results');
+  window.scrollTo(0,0);
+}
+
+function renderResults(r) {
+  // Business label
+  if (r.biz) {
+    document.getElementById('results-biz-label').textContent = 'Revenue opportunity report for ' + r.biz;
+  }
+
+  // Banner
+  const banner = document.getElementById('opp-banner');
+  const bannerLabel = document.getElementById('banner-label');
+  const bannerHeadline = document.getElementById('banner-headline');
+  const bannerAmount = document.getElementById('banner-amount');
+  banner.className = 'opportunity-banner';
+  bannerLabel.className = 'banner-label';
+  bannerAmount.className = 'banner-amount';
+  if (r.totalOpportunity >= 10000) {
+    banner.classList.add('green');
+    bannerLabel.classList.add('green');
+    bannerAmount.classList.add('green');
+    bannerHeadline.textContent = 'Significant revenue opportunity identified';
+  } else if (r.totalOpportunity >= 3000) {
+    banner.classList.add('yellow');
+    bannerLabel.classList.add('yellow');
+    bannerAmount.classList.add('yellow');
+    bannerHeadline.textContent = 'Meaningful revenue opportunity available';
+  } else {
+    banner.classList.add('red');
+    bannerLabel.classList.add('red');
+    bannerAmount.classList.add('red');
+    bannerHeadline.textContent = 'Some opportunity available - focus on the basics first';
+  }
+  bannerAmount.textContent = fmtDollarFull(r.totalOpportunity);
+
+  // Metric boxes
+  document.getElementById('m-baseline').textContent = fmtDollar(r.annual);
+  document.getElementById('m-with-reviews').textContent = fmtDollar(r.revenueWithReviews);
+  document.getElementById('m-opportunity').textContent = fmtDollarFull(r.totalOpportunity);
+
+  // Breakdown table
+  const tbody = document.getElementById('breakdown-tbody');
+  const rows = [
+    {
+      area: 'Review Count Impact',
+      details: r.reviewCountDesc,
+      amount: r.reviewCountImpact
+    },
+    {
+      area: 'Star Rating Revenue Impact',
+      details: r.ratingDesc,
+      amount: r.ratingImpact
+    },
+    {
+      area: 'Google 3-Pack Visibility',
+      details: r.threePackDesc,
+      amount: r.threePackImpact
+    },
+    {
+      area: 'Total Annual Opportunity',
+      details: 'Combined estimate from all three improvements',
+      amount: r.totalOpportunity,
+      isTotal: true
+    }
+  ];
+
+  tbody.innerHTML = rows.map(row => `
+    <tr${row.isTotal ? ' style="background:#FFFBF0;"' : ''}>
+      <td><strong>${row.area}</strong><div class="row-desc">${row.details}</div></td>
+      <td></td>
+      <td>${row.isTotal ? '<strong>' + fmtDollarFull(row.amount) + '</strong>' : fmtDollarFull(row.amount)}</td>
+    </tr>
+  `).join('');
+
+  // Timeline
+  document.getElementById('t-organic').textContent = r.reviewsNeeded > 0 ? r.monthsOrganic : '0';
+  document.getElementById('t-active').textContent = r.reviewsNeeded > 0 ? r.monthsActive : '0';
+
+  // Recommendations
+  const recs = buildRecs(r);
+  const recsList = document.getElementById('recs-list');
+  recsList.innerHTML = recs.map((rec, i) => `
+    <div class="rec-item">
+      <div class="rec-num">${i+1}</div>
+      <div>
+        <div class="rec-title">${rec.title}</div>
+        <div class="rec-desc">${rec.desc}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function buildRecs(r) {
+  const recs = [];
+
+  if (r.reviewsNeeded > 0) {
+    recs.push({
+      title: 'Implement a Review Request System',
+      desc: 'You need ' + r.reviewsNeeded + ' more reviews to hit your goal of ' + r.targetReviews + '. Set up an automated text or email follow-up that asks every satisfied customer for a Google review within 24 hours of service. A simple system can generate 10+ reviews per month.'
+    });
+  } else {
+    recs.push({
+      title: 'Maintain Your Review Momentum',
+      desc: 'You have already reached your target review count. Keep the momentum going with a consistent review request process after every customer interaction to stay well above competitors.'
+    });
+  }
+
+  if (r.currentRating < 4.5) {
+    recs.push({
+      title: 'Raise Your Star Rating Toward 4.5',
+      desc: 'Your current ' + r.currentRating.toFixed(1) + '-star average is costing you an estimated ' + fmtDollarFull(r.ratingImpact) + ' per year. Respond professionally to all reviews, resolve complaints promptly, and consistently ask happy customers to share their experience.'
+    });
+  } else {
+    recs.push({
+      title: 'Protect Your 4.5+ Star Rating',
+      desc: 'Your strong rating is a competitive advantage. Respond to every review, address any negative feedback immediately, and keep asking satisfied customers to leave reviews to maintain your high average.'
+    });
+  }
+
+  if (r.currentReviews < 50) {
+    recs.push({
+      title: 'Optimize Your Google Business Profile for 3-Pack Visibility',
+      desc: 'Reaching 50+ reviews is a key factor in Google 3-pack ranking. Also ensure your business name, address, and phone are consistent across all directories, add 10+ photos to your GBP, and include location keywords in your business description.'
+    });
+  } else {
+    recs.push({
+      title: 'Refine Your GBP to Maximize 3-Pack Rankings',
+      desc: 'With 50+ reviews you are well-positioned for 3-pack visibility. Strengthen your ranking by posting regular GBP updates, adding fresh photos monthly, responding to all reviews, and ensuring your primary category is correct.'
+    });
+  }
+
+  return recs.slice(0, 3);
+}
+
+// ===== PDF GENERATION =====
+function generatePDF() {
+  try {
+    function pdfSafe(str) {
+      if (str == null) return '';
+      return String(str)
+        .replace(/\u2013/g, '-')
+        .replace(/\u2014/g, '-')
+        .replace(/\u00B7/g, '|')
+        .replace(/\u2019/g, "'")
+        .replace(/\u2018/g, "'")
+        .replace(/\u201C/g, '"')
+        .replace(/\u201D/g, '"')
+        .replace(/[^\x00-\x7F]/g, '');
+    }
+
+    const r = calcResults;
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const W = 210, H = 297;
+    const margin = 20;
+    const contentW = W - margin * 2;
+
+    const CREAM = [250, 250, 247];
+    const GOLD = [184, 134, 11];
+    const DARK = [26, 26, 26];
+    const WHITE = [255, 255, 255];
+    const MID = [85, 85, 85];
+    const LIGHT = [136, 136, 136];
+    const BORDER = [224, 221, 213];
+    const GREEN_C = [39, 174, 96];
+    const YELLOW_C = [230, 126, 34];
+    const RED_C = [192, 57, 43];
+
+    const bannerColor = r.totalOpportunity >= 10000 ? GREEN_C : (r.totalOpportunity >= 3000 ? YELLOW_C : RED_C);
+    const biz = pdfSafe(r.biz || 'Your Business');
+    const dateStr = new Date().toLocaleDateString('en-US', {month:'long',day:'numeric',year:'numeric'});
+
+    function addFooter() {
+      doc.setFillColor(...DARK);
+      doc.rect(0, H - 14, W, 14, 'F');
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(...WHITE);
+      doc.text(pdfSafe('tom@tms-solutions-group.com | tms-solutions-group.com | 386-387-8620'), W/2, H - 5.5, {align:'center'});
+    }
+
+    // ===== PAGE 1: COVER / SUMMARY =====
+    doc.setFillColor(...CREAM);
+    doc.rect(0, 0, W, H, 'F');
+
+    // Header band
+    doc.setFillColor(...DARK);
+    doc.rect(0, 0, W, 36, 'F');
+    doc.setFont('times', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(...WHITE);
+    doc.text(pdfSafe('TMS Solutions Group'), margin, 22);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...[180,180,180]);
+    doc.text(pdfSafe('tms-solutions-group.com'), W - margin, 22, {align:'right'});
+
+    doc.setFillColor(...GOLD);
+    doc.rect(0, 36, W, 4, 'F');
+
+    // Title
+    doc.setFont('times', 'bold');
+    doc.setFontSize(26);
+    doc.setTextColor(...DARK);
+    doc.text(pdfSafe('Google Review Impact'), W/2, 62, {align:'center'});
+    doc.text(pdfSafe('Estimator'), W/2, 74, {align:'center'});
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.setTextColor(...MID);
+    doc.text(pdfSafe('Your personalized revenue opportunity from Google reviews'), W/2, 84, {align:'center'});
+
+    doc.setDrawColor(...GOLD);
+    doc.setLineWidth(0.5);
+    doc.line(margin + 20, 90, W - margin - 20, 90);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.setTextColor(...DARK);
+    doc.text(pdfSafe(biz), W/2, 100, {align:'center'});
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...LIGHT);
+    doc.text(pdfSafe('Report Date: ' + dateStr), W/2, 107, {align:'center'});
+
+    // Main opportunity banner
+    doc.setFillColor(...bannerColor);
+    doc.roundedRect(margin, 116, contentW, 36, 3, 3, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(...WHITE);
+    doc.text(pdfSafe('TOTAL ANNUAL REVENUE OPPORTUNITY'), W/2, 127, {align:'center'});
+    doc.setFont('times', 'bold');
+    doc.setFontSize(28);
+    doc.text(pdfSafe(fmtDollarFull(r.totalOpportunity)), W/2, 142, {align:'center'});
+
+    // 3 metric boxes
+    const mw = (contentW - 8) / 3;
+    const metrics = [
+      { label: 'Current Annual Revenue', val: fmtDollarFull(r.annual) },
+      { label: 'Est. Revenue With Strong Reviews', val: fmtDollarFull(r.revenueWithReviews) },
+      { label: 'Total Annual Opportunity', val: fmtDollarFull(r.totalOpportunity) },
+    ];
+    metrics.forEach((m, i) => {
+      const mx = margin + i * (mw + 4);
+      doc.setFillColor(...WHITE);
+      doc.roundedRect(mx, 162, mw, 32, 2, 2, 'F');
+      doc.setDrawColor(...BORDER);
+      doc.setLineWidth(0.3);
+      doc.roundedRect(mx, 162, mw, 32, 2, 2, 'S');
+      doc.setFont('times', 'bold');
+      doc.setFontSize(12);
+      doc.setTextColor(...GOLD);
+      doc.text(pdfSafe(m.val), mx + mw/2, 174, {align:'center'});
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(...MID);
+      const lbl = doc.splitTextToSize(pdfSafe(m.label), mw - 8);
+      doc.text(lbl, mx + mw/2, 181, {align:'center'});
+    });
+
+    // Input summary
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(...MID);
+    doc.text(pdfSafe('YOUR INPUTS'), margin, 206);
+    const inputs = [
+      'Monthly Revenue: ' + fmtDollarFull(r.monthly),
+      'Current Reviews: ' + r.currentReviews,
+      'Current Rating: ' + r.currentRating.toFixed(1) + ' stars',
+      'Target Reviews: ' + r.targetReviews,
+    ];
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...DARK);
+    doc.setFillColor(...WHITE);
+    doc.roundedRect(margin, 209, contentW, 18, 2, 2, 'F');
+    doc.setDrawColor(...BORDER);
+    doc.roundedRect(margin, 209, contentW, 18, 2, 2, 'S');
+    inputs.forEach((inp, i) => {
+      doc.text(pdfSafe(inp), margin + 8 + i * (contentW/4), 219);
+    });
+
+    // Timeline boxes
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(...MID);
+    doc.text(pdfSafe('TIME TO REACH YOUR GOAL'), margin, 239);
+    const tw = (contentW - 8) / 2;
+    const timelines = [
+      { val: r.reviewsNeeded > 0 ? r.monthsOrganic + ' months' : 'Already there!', label: 'At 4 reviews/month (organic ask-based approach)' },
+      { val: r.reviewsNeeded > 0 ? r.monthsActive + ' months' : 'Already there!', label: 'At 10 reviews/month (active review request system)' },
+    ];
+    timelines.forEach((t, i) => {
+      const tx = margin + i * (tw + 8);
+      doc.setFillColor(...WHITE);
+      doc.roundedRect(tx, 242, tw, 26, 2, 2, 'F');
+      doc.setDrawColor(...BORDER);
+      doc.roundedRect(tx, 242, tw, 26, 2, 2, 'S');
+      doc.setFont('times', 'bold');
+      doc.setFontSize(16);
+      doc.setTextColor(...GOLD);
+      doc.text(pdfSafe(t.val), tx + tw/2, 252, {align:'center'});
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(...MID);
+      const tlbl = doc.splitTextToSize(pdfSafe(t.label), tw - 8);
+      doc.text(tlbl, tx + tw/2, 260, {align:'center'});
+    });
+
+    addFooter();
+
+    // ===== PAGE 2: DETAILED BREAKDOWN =====
+    doc.addPage();
+    doc.setFillColor(...CREAM);
+    doc.rect(0, 0, W, H, 'F');
+
+    doc.setFillColor(...DARK);
+    doc.rect(0, 0, W, 18, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(...WHITE);
+    doc.text(pdfSafe('GOOGLE REVIEW IMPACT ESTIMATOR - DETAILED BREAKDOWN'), margin, 11);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...[180,180,180]);
+    doc.text(pdfSafe(biz + ' | ' + dateStr), W - margin, 11, {align:'right'});
+
+    doc.setFont('times', 'bold');
+    doc.setFontSize(20);
+    doc.setTextColor(...DARK);
+    doc.text(pdfSafe('Revenue Impact Breakdown'), margin, 34);
+
+    // Breakdown rows
+    const breakdownRows = [
+      {
+        area: 'Review Count Impact',
+        details: pdfSafe(r.reviewCountDesc),
+        source: 'Womply: businesses with 25+ reviews earn 108% more revenue',
+        amount: r.reviewCountImpact,
+        color: r.reviewCountImpact > 0 ? GREEN_C : LIGHT
+      },
+      {
+        area: 'Star Rating Revenue Impact',
+        details: pdfSafe(r.ratingDesc),
+        source: 'Harvard Business School: each 1-star increase = 5-9% revenue growth (7% midpoint used)',
+        amount: r.ratingImpact,
+        color: r.ratingImpact > 0 ? GREEN_C : LIGHT
+      },
+      {
+        area: 'Google 3-Pack Visibility',
+        details: pdfSafe(r.threePackDesc),
+        source: 'BrightLocal: Google 3-pack generates 126% more traffic than non-3-pack listings',
+        amount: r.threePackImpact,
+        color: r.threePackImpact > 0 ? GREEN_C : LIGHT
+      }
+    ];
+
+    let by = 42;
+    breakdownRows.forEach(row => {
+      doc.setFillColor(...WHITE);
+      doc.roundedRect(margin, by, contentW, 42, 2, 2, 'F');
+      doc.setDrawColor(...BORDER);
+      doc.setLineWidth(0.3);
+      doc.roundedRect(margin, by, contentW, 42, 2, 2, 'S');
+      doc.setFillColor(...row.color);
+      doc.rect(margin, by, 4, 42, 'F');
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(...DARK);
+      doc.text(pdfSafe(row.area), margin + 8, by + 10);
+
+      doc.setFont('times', 'bold');
+      doc.setFontSize(14);
+      doc.setTextColor(...row.color);
+      doc.text(pdfSafe(fmtDollarFull(row.amount)), W - margin - 4, by + 10, {align:'right'});
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(...MID);
+      const dlines = doc.splitTextToSize(pdfSafe(row.details), contentW - 60);
+      doc.text(dlines, margin + 8, by + 20);
+
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(7.5);
+      doc.setTextColor(...LIGHT);
+      const slines = doc.splitTextToSize(pdfSafe('Source: ' + row.source), contentW - 16);
+      doc.text(slines, margin + 8, by + 33);
+
+      by += 48;
+    });
+
+    // Total
+    doc.setFillColor(...bannerColor);
+    doc.roundedRect(margin, by, contentW, 18, 2, 2, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(...WHITE);
+    doc.text(pdfSafe('Total Annual Opportunity'), margin + 8, by + 11);
+    doc.setFont('times', 'bold');
+    doc.setFontSize(14);
+    doc.text(pdfSafe(fmtDollarFull(r.totalOpportunity)), W - margin - 4, by + 11, {align:'right'});
+    by += 28;
+
+    // Top 3 Recommendations
+    doc.setFont('times', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(...DARK);
+    doc.text(pdfSafe('Your Top 3 Action Recommendations'), margin, by + 6);
+    by += 14;
+
+    const recs = buildRecs(r);
+    recs.forEach((rec, i) => {
+      doc.setFillColor(...WHITE);
+      doc.roundedRect(margin, by, contentW, 36, 2, 2, 'F');
+      doc.setDrawColor(...BORDER);
+      doc.roundedRect(margin, by, contentW, 36, 2, 2, 'S');
+
+      doc.setFillColor(...GOLD);
+      doc.circle(margin + 10, by + 9, 6, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(...WHITE);
+      doc.text(String(i+1), margin + 10, by + 11, {align:'center'});
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(...DARK);
+      doc.text(pdfSafe(rec.title), margin + 20, by + 11);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(...MID);
+      const rlines = doc.splitTextToSize(pdfSafe(rec.desc), contentW - 20);
+      doc.text(rlines, margin + 8, by + 21);
+
+      by += 42;
+    });
+
+    // CTA
+    doc.setFillColor(...DARK);
+    doc.roundedRect(margin, by, contentW, 40, 3, 3, 'F');
+    doc.setFont('times', 'bold');
+    doc.setFontSize(14);
+    doc.setTextColor(...WHITE);
+    doc.text(pdfSafe('Ready to Capture This Revenue Opportunity?'), W/2, by + 12, {align:'center'});
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...[180,180,180]);
+    const ctaText = 'TMS Solutions Group helps local businesses implement proven review generation systems. Schedule a free strategy call to build your custom plan.';
+    const ctaLines = doc.splitTextToSize(pdfSafe(ctaText), contentW - 20);
+    doc.text(ctaLines, W/2, by + 22, {align:'center'});
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(...GOLD);
+    doc.text(pdfSafe('tom@tms-solutions-group.com  |  tms-solutions-group.com  |  386-387-8620'), W/2, by + 35, {align:'center'});
+
+    // Sources
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(7);
+    doc.setTextColor(...LIGHT);
+    doc.text(pdfSafe('Data Sources: Harvard Business School restaurant revenue study | Womply review impact research | BrightLocal Local Consumer Review Survey 2024 | Trustmary review statistics'), W/2, by + 56, {align:'center'});
+
+    addFooter();
+
+    const safeBiz = (r.biz || 'Report').replace(/[^a-zA-Z0-9\s]/g,'').replace(/\s+/g,'-');
+    doc.save('TMS-Review-Impact-Estimator-' + safeBiz + '.pdf');
+
+  } catch (err) {
+    console.error('PDF generation error:', err);
+    alert('PDF generation failed: ' + err.message);
+  }
+}
+</script>
+</body>
+</html>
