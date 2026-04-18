@@ -575,42 +575,54 @@ function calculate() {
 
   const annual = monthly * 12;
 
-  // 1. Review count impact: going from <25 to >=25 = 15% lift
+  // 1. Review count impact: sliding scale (conservative interpretation of Womply 108% research)
+  //    Full lift only for very low review counts; diminishing returns as count grows
   let reviewCountImpact = 0;
   let reviewCountDesc = '';
-  if (currentReviews < 25 && targetReviews >= 25) {
-    reviewCountImpact = annual * 0.15;
-    reviewCountDesc = 'Reaching 25+ reviews unlocks the 108% more revenue threshold';
-  } else if (currentReviews >= 25) {
-    reviewCountImpact = 0;
-    reviewCountDesc = 'Already past the 25-review threshold - maintain consistent growth';
+  if (currentReviews < 10) {
+    reviewCountImpact = annual * 0.10;
+    reviewCountDesc = 'Fewer than 10 reviews - significant credibility gap vs competitors with 25+ reviews (Womply: 25+ reviews earn 108% more)';
+  } else if (currentReviews < 25) {
+    reviewCountImpact = annual * 0.05;
+    reviewCountDesc = 'Building toward 25 reviews - partial lift applied as you approach the high-credibility threshold';
+  } else if (currentReviews < 50) {
+    reviewCountImpact = annual * 0.02;
+    reviewCountDesc = 'Past the 25-review mark - incremental gains from growing toward 50+ reviews';
   } else {
     reviewCountImpact = 0;
-    reviewCountDesc = 'Set your target to 25+ reviews to unlock this revenue lift';
+    reviewCountDesc = 'Strong review volume - focus on maintaining quality and recency rather than raw count';
   }
 
-  // 2. Star rating impact: 7% per star gap from current to 4.5
-  let ratingGap = Math.max(0, 4.5 - currentRating);
-  let ratingImpact = ratingGap * 0.07 * annual;
+  // 2. Star rating impact: 5% per star (lower bound of Harvard 5-9% range), gap capped at 1.5 stars
+  let ratingGap = Math.max(0, Math.min(1.5, 4.5 - currentRating));
+  let ratingImpact = ratingGap * 0.05 * annual;
   let ratingDesc = '';
   if (currentRating >= 4.5) {
-    ratingDesc = 'Excellent! Maintain your 4.5+ rating through consistent review responses';
+    ratingDesc = 'Excellent rating - maintain your 4.5+ average through consistent review responses';
   } else {
-    ratingDesc = 'Improving from ' + currentRating.toFixed(1) + ' to 4.5 stars (' + ratingGap.toFixed(1) + ' star gap x 7% per star)';
+    ratingDesc = 'Improving from ' + currentRating.toFixed(1) + ' to 4.5 stars (' + ratingGap.toFixed(1) + ' star gap x 5% per star - lower bound of Harvard study range)';
   }
 
-  // 3. Google 3-pack visibility value
+  // 3. Google 3-pack visibility: sliding scale by review count
   let threePackImpact = 0;
   let threePackDesc = '';
-  if (currentReviews < 50) {
-    threePackImpact = annual * 0.15;
-    threePackDesc = '3-pack generates 126% more traffic - reaching 50+ reviews significantly improves eligibility';
+  if (currentReviews < 10) {
+    threePackImpact = annual * 0.08;
+    threePackDesc = 'Very low review count limits 3-pack eligibility - growing to 25+ is a key local ranking signal (3-pack = 126% more traffic)';
+  } else if (currentReviews < 25) {
+    threePackImpact = annual * 0.05;
+    threePackDesc = 'Growing review count improves 3-pack odds - BrightLocal: Google 3-pack generates 126% more traffic than non-3-pack listings';
+  } else if (currentReviews < 50) {
+    threePackImpact = annual * 0.02;
+    threePackDesc = 'Close to strong 3-pack candidacy - 50+ reviews and a 4.5+ rating maximize your position';
   } else {
     threePackImpact = 0;
-    threePackDesc = 'With 50+ reviews you are positioned for 3-pack - focus on GBP optimization';
+    threePackDesc = 'Review volume supports 3-pack - focus on GBP optimization and local keyword presence to hold position';
   }
 
-  const totalOpportunity = reviewCountImpact + ratingImpact + threePackImpact;
+  const rawOpportunity = reviewCountImpact + ratingImpact + threePackImpact;
+  // Cap at 18% of annual revenue for realistic, conservative projections
+  const totalOpportunity = Math.min(rawOpportunity, annual * 0.18);
   const revenueWithReviews = annual + totalOpportunity;
 
   const reviewsNeeded = Math.max(0, targetReviews - currentReviews);
