@@ -27,14 +27,15 @@
     .view.active { display: block; }
 
     .site-header {
-      background: #FAF6EE;
+      background: #1a1a1a;
       padding: 14px 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
-    .site-header .brand { color: #1a1a1a; font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; }
-    .site-header .contact { color: #666; font-size: 0.78rem; }
+    .site-header .brand { color: #fff; font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; }
+    .site-header .contact { color: #ccc; font-size: 0.78rem; }
+    .brand-logo-wrap { background: #fff; padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; }
     .brand-logo { height: 44px; width: auto; display: block; object-fit: contain; }
 
     /* ===== LANDING ===== */
@@ -308,7 +309,7 @@
 <body>
 
 <header class="site-header">
-  <img src="/images/tms-logo.png" alt="TMS Solutions Group" class="brand-logo" />
+  <div class="brand-logo-wrap"><img src="/images/tms-logo.png" alt="TMS Solutions Group" class="brand-logo" /></div>
   <div class="contact">tom@tms-solutions-group.com &nbsp;|&nbsp; 386-387-8620</div>
 </header>
 
